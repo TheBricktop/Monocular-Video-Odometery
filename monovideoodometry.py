@@ -28,8 +28,8 @@ class MonoVideoOdometry(object):
         self.lk_params = lk_params
         self.focal = focal_length
         self.pp = pp
-        self.R = np.zeros(shape=(3, 3))
-        self.t = np.zeros(shape=(3, 3))
+        self.R = np.identity(3)
+        self.t = np.zeros(3)
         self.id = 0
         self.n_features = 0
 
