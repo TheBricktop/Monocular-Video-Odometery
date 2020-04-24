@@ -1,7 +1,7 @@
 import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
-from monovideoodometery import MonoVideoOdometery
+from monovideoodometry import MonoVideoOdometry
 import os
 
 
@@ -21,7 +21,7 @@ lk_params = dict( winSize  = (21,21),
 # Create some random colors
 color = np.random.randint(0,255,(5000,3))
 
-vo = MonoVideoOdometery(img_path, pose_path, focal, pp, lk_params)
+vo = MonoVideoOdometry(img_path, pose_path, focal, pp, lk_params)
 traj = np.zeros(shape=(600, 800, 3))
 
 # mask = np.zeros_like(vo.current_frame)
