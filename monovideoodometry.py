@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import os
+import glob
 
 
 class MonoVideoOdometry(object):
@@ -35,12 +36,9 @@ class MonoVideoOdometry(object):
         self.id = 0
         self.n_features = 0
 
-        try:
-            if not all([".png" in x for x in os.listdir(img_file_path)]):
-                raise ValueError("img_file_path is not correct and does not exclusively png files")
-        except Exception as e:
-            print(e)
-            raise ValueError("The designated img_file_path does not exist, please check the path and try again")
+        self.frame_paths = glob.glob(os.path.join(img_file_path, "*.png"))
+        self.frame_paths.sort()
+        self.n_frames = len(self.frame_paths)
 
         self.process_frame()
 
@@ -52,7 +50,7 @@ class MonoVideoOdometry(object):
             bool -- Boolean value denoting whether there are still 
             frames in the folder to process
         """
-        return self.id < len(os.listdir(self.file_path)) 
+        return self.id < self.n_frames
 
     def detect(self, img):
         """
@@ -109,12 +107,12 @@ class MonoVideoOdometry(object):
         Processes images in sequence frame by frame
         """
         if self.id < 2:
-            self.old_frame = cv2.imread(self.file_path +str().zfill(6)+'.png', 0)
-            self.current_frame = cv2.imread(self.file_path + str(1).zfill(6)+'.png', 0)
+            self.old_frame = cv2.imread(self.frame_paths[0], 0)
+            self.current_frame = cv2.imread(self.frame_paths[1], 0)
             self.visual_odometry()
             self.id = 2
         else:
             self.old_frame = self.current_frame
-            self.current_frame = cv2.imread(self.file_path + str(self.id).zfill(6)+'.png', 0)
+            self.current_frame = cv2.imread(self.frame_paths[self.id], 0)
             self.visual_odometry()
             self.id += 1
