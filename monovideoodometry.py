@@ -48,7 +48,7 @@ class MonoVideoOdometry(object):
 
         self.process_frame()
 
-    def hasNextFrame(self):
+    def has_next_frame(self):
         """
         Used to determine whether there are remaining frames in the folder to process
         
