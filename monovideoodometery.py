@@ -4,14 +4,13 @@ import os
 
 
 class MonoVideoOdometery(object):
-    def __init__(self, 
-                img_file_path,
-                pose_file_path,
-                focal_length = 718.8560,
-                pp = (607.1928, 185.2157), 
-                lk_params=dict(winSize  = (21,21), criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)), 
-                detector=cv2.FastFeatureDetector_create(threshold=25, nonmaxSuppression=True)):
-        '''
+    def __init__(self, img_file_path,
+                 pose_file_path,
+                 focal_length=718.8560,
+                 pp=(607.1928, 185.2157), 
+                 lk_params=dict(winSize=(21, 21), criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)), 
+                 detector=cv2.FastFeatureDetector_create(threshold=25, nonmaxSuppression=True)):
+        """
         Arguments:
             img_file_path {str} -- File path that leads to image sequences
             pose_file_path {str} -- File path that leads to true poses from image sequence
@@ -24,7 +23,7 @@ class MonoVideoOdometery(object):
         
         Raises:
             ValueError -- Raised when file either file paths are not correct, or img_file_path is not configured correctly
-        '''
+        """
 
         self.file_path = img_file_path
         self.detector = detector
@@ -53,17 +52,18 @@ class MonoVideoOdometery(object):
         self.process_frame()
 
     def hasNextFrame(self):
-        '''Used to determine whether there are remaining frames
-           in the folder to process
+        """
+        Used to determine whether there are remaining frames in the folder to process
         
         Returns:
             bool -- Boolean value denoting whether there are still 
             frames in the folder to process
-        '''
+        """
         return self.id < len(os.listdir(self.file_path)) 
 
     def detect(self, img):
-        '''Used to detect features and parse into useable format
+        """
+        Used to detect features and parse into useable format
 
         
         Arguments:
@@ -72,19 +72,16 @@ class MonoVideoOdometery(object):
         Returns:
             np.array -- A sequence of points in (x, y) coordinate format
             denoting location of detected keypoint
-        '''
-
+        """
         p0 = self.detector.detect(img)
-        
         return np.array([x.pt for x in p0], dtype=np.float32).reshape(-1, 1, 2)
 
     def visual_odometery(self):
-        '''
+        """
         Used to perform visual odometery. If features fall out of frame
         such that there are less than 2000 features remaining, a new feature
         detection is triggered. 
-        '''
-
+        """
         if self.n_features < 2000:
             self.p0 = self.detect(self.old_frame)
 
@@ -124,20 +121,22 @@ class MonoVideoOdometery(object):
         return adj_coord.flatten()
 
     def get_true_coordinates(self):
-        '''Returns true coordinates of vehicle
+        """
+        Returns true coordinates of vehicle
         
         Returns:
             np.array -- Array in format [x, y, z]
-        '''
+        """
         return self.true_coord.flatten()
 
     def get_absolute_scale(self):
-        '''Used to provide scale estimation for mutliplying
+        """
+        Used to provide scale estimation for mutliplying
            translation vectors
         
         Returns:
             float -- Scalar value allowing for scale estimation
-        '''
+        """
         pose = self.pose[self.id - 1].strip().split()
         x_prev = float(pose[3])
         y_prev = float(pose[7])
@@ -154,9 +153,9 @@ class MonoVideoOdometery(object):
         return np.linalg.norm(true_vect - prev_vect)
 
     def process_frame(self):
-        '''Processes images in sequence frame by frame
-        '''
-
+        """
+        Processes images in sequence frame by frame
+        """
         if self.id < 2:
             self.old_frame = cv2.imread(self.file_path +str().zfill(6)+'.png', 0)
             self.current_frame = cv2.imread(self.file_path + str(1).zfill(6)+'.png', 0)
