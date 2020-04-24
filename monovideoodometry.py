@@ -5,7 +5,6 @@ import os
 
 class MonoVideoOdometry(object):
     def __init__(self, img_file_path,
-                 pose_file_path,
                  focal_length=718.8560,
                  pp=(607.1928, 185.2157), 
                  lk_params=dict(winSize=(21, 21), criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)), 
@@ -13,7 +12,6 @@ class MonoVideoOdometry(object):
         """
         Arguments:
             img_file_path {str} -- File path that leads to image sequences
-            pose_file_path {str} -- File path that leads to true poses from image sequence
         
         Keyword Arguments:
             focal_length {float} -- Focal length of camera used in image sequence (default: {718.8560})
@@ -41,13 +39,6 @@ class MonoVideoOdometry(object):
         except Exception as e:
             print(e)
             raise ValueError("The designated img_file_path does not exist, please check the path and try again")
-
-        try:
-            with open(pose_file_path) as f:
-                self.pose = f.readlines()
-        except Exception as e:
-            print(e)
-            raise ValueError("The pose_file_path is not valid or did not lead to a txt file")
 
         self.process_frame()
 
@@ -102,10 +93,8 @@ class MonoVideoOdometry(object):
             E, _ = cv2.findEssentialMat(self.good_new, self.good_old, self.focal, self.pp, cv2.RANSAC, 0.999, 1.0, None)
             _, R, t, _ = cv2.recoverPose(E, self.good_old, self.good_new, self.R.copy(), self.t.copy(), self.focal, self.pp, None)
 
-            absolute_scale = self.get_absolute_scale()
-            if (absolute_scale > 0.1 and abs(t[2][0]) > abs(t[0][0]) and abs(t[2][0]) > abs(t[1][0])):
-                self.t = self.t + absolute_scale*self.R.dot(t)
-                self.R = R.dot(self.R)
+            self.t = self.t + self.R.dot(t)
+            self.R = R.dot(self.R)
 
         # Save the total number of good features
         self.n_features = self.good_new.shape[0]
@@ -128,29 +117,6 @@ class MonoVideoOdometry(object):
             np.array -- Array in format [x, y, z]
         """
         return self.true_coord.flatten()
-
-    def get_absolute_scale(self):
-        """
-        Used to provide scale estimation for mutliplying
-           translation vectors
-        
-        Returns:
-            float -- Scalar value allowing for scale estimation
-        """
-        pose = self.pose[self.id - 1].strip().split()
-        x_prev = float(pose[3])
-        y_prev = float(pose[7])
-        z_prev = float(pose[11])
-        pose = self.pose[self.id].strip().split()
-        x = float(pose[3])
-        y = float(pose[7])
-        z = float(pose[11])
-
-        true_vect = np.array([[x], [y], [z]])
-        self.true_coord = true_vect
-        prev_vect = np.array([[x_prev], [y_prev], [z_prev]])
-        
-        return np.linalg.norm(true_vect - prev_vect)
 
     def process_frame(self):
         """

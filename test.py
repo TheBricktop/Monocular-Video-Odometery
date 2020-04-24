@@ -21,7 +21,7 @@ lk_params = dict(winSize=(21, 21),
 # Create some random colors
 color = np.random.randint(0, 255, (5000, 3))
 
-vo = MonoVideoOdometry(img_path, pose_path, focal, pp, lk_params)
+vo = MonoVideoOdometry(img_path, focal, pp, lk_params)
 traj = np.zeros(shape=(600, 800, 3))
 
 while vo.hasNextFrame():
