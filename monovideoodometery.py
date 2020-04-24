@@ -52,7 +52,6 @@ class MonoVideoOdometery(object):
 
         self.process_frame()
 
-
     def hasNextFrame(self):
         '''Used to determine whether there are remaining frames
            in the folder to process
@@ -61,9 +60,7 @@ class MonoVideoOdometery(object):
             bool -- Boolean value denoting whether there are still 
             frames in the folder to process
         '''
-
         return self.id < len(os.listdir(self.file_path)) 
-
 
     def detect(self, img):
         '''Used to detect features and parse into useable format
@@ -81,7 +78,6 @@ class MonoVideoOdometery(object):
         
         return np.array([x.pt for x in p0], dtype=np.float32).reshape(-1, 1, 2)
 
-
     def visual_odometery(self):
         '''
         Used to perform visual odometery. If features fall out of frame
@@ -92,16 +88,13 @@ class MonoVideoOdometery(object):
         if self.n_features < 2000:
             self.p0 = self.detect(self.old_frame)
 
-
         # Calculate optical flow between frames, st holds status
         # of points from frame to frame
         self.p1, st, err = cv2.calcOpticalFlowPyrLK(self.old_frame, self.current_frame, self.p0, None, **self.lk_params)
-        
 
         # Save the good points from the optical flow
         self.good_old = self.p0[st == 1]
         self.good_new = self.p1[st == 1]
-
 
         # If the frame is one of first two, we need to initalize
         # our t and R vectors so behavior is different
@@ -120,7 +113,6 @@ class MonoVideoOdometery(object):
         # Save the total number of good features
         self.n_features = self.good_new.shape[0]
 
-
     def get_mono_coordinates(self):
         # We multiply by the diagonal matrix to fix our vector
         # onto same coordinate axis as true values
@@ -131,7 +123,6 @@ class MonoVideoOdometery(object):
 
         return adj_coord.flatten()
 
-
     def get_true_coordinates(self):
         '''Returns true coordinates of vehicle
         
@@ -139,7 +130,6 @@ class MonoVideoOdometery(object):
             np.array -- Array in format [x, y, z]
         '''
         return self.true_coord.flatten()
-
 
     def get_absolute_scale(self):
         '''Used to provide scale estimation for mutliplying
@@ -163,7 +153,6 @@ class MonoVideoOdometery(object):
         
         return np.linalg.norm(true_vect - prev_vect)
 
-
     def process_frame(self):
         '''Processes images in sequence frame by frame
         '''
@@ -178,5 +167,3 @@ class MonoVideoOdometery(object):
             self.current_frame = cv2.imread(self.file_path + str(self.id).zfill(6)+'.png', 0)
             self.visual_odometery()
             self.id += 1
-
-
