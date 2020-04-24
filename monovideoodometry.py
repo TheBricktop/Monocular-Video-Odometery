@@ -3,7 +3,7 @@ import cv2
 import os
 
 
-class MonoVideoOdometery(object):
+class MonoVideoOdometry(object):
     def __init__(self, img_file_path,
                  pose_file_path,
                  focal_length=718.8560,
@@ -76,9 +76,9 @@ class MonoVideoOdometery(object):
         p0 = self.detector.detect(img)
         return np.array([x.pt for x in p0], dtype=np.float32).reshape(-1, 1, 2)
 
-    def visual_odometery(self):
+    def visual_odometry(self):
         """
-        Used to perform visual odometery. If features fall out of frame
+        Used to perform visual odometry. If features fall out of frame
         such that there are less than 2000 features remaining, a new feature
         detection is triggered. 
         """
@@ -159,10 +159,10 @@ class MonoVideoOdometery(object):
         if self.id < 2:
             self.old_frame = cv2.imread(self.file_path +str().zfill(6)+'.png', 0)
             self.current_frame = cv2.imread(self.file_path + str(1).zfill(6)+'.png', 0)
-            self.visual_odometery()
+            self.visual_odometry()
             self.id = 2
         else:
             self.old_frame = self.current_frame
             self.current_frame = cv2.imread(self.file_path + str(self.id).zfill(6)+'.png', 0)
-            self.visual_odometery()
+            self.visual_odometry()
             self.id += 1
