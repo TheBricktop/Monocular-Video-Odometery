@@ -7,8 +7,8 @@ import glob
 class MonoVideoOdometry(object):
     def __init__(self, img_file_path,
                  focal_length=718.8560,
-                 pp=(607.1928, 185.2157), 
-                 lk_params=dict(winSize=(21, 21), criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)), 
+                 pp=(607.1928, 185.2157),
+                 lk_params=dict(winSize=(21, 21), criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)),
                  detector=cv2.FastFeatureDetector_create(threshold=25, nonmaxSuppression=True),
                  camera_extrinsic_rotation=np.identity(3)):
         """
@@ -35,6 +35,12 @@ class MonoVideoOdometry(object):
         self.t = np.zeros(3)
         self.id = 0
         self.n_features = 0
+        self.old_frame = None
+        self.current_frame = None
+        self.good_old = None
+        self.good_new = None
+        self.p0 = None
+        self.p1 = None
 
         self.frame_paths = glob.glob(os.path.join(img_file_path, "*.png"))
         self.frame_paths.sort()
