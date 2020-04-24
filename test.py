@@ -40,14 +40,22 @@ while vo.hasNextFrame():
 
     vo.process_frame()
 
-    mono_coord = vo.get_mono_coordinates()
+    coords.append(vo.get_coordinates())
 
-    coords.append(mono_coord)
-
-coords = np.array(coords)
+coords = np.array(coords).T
 fig = plt.figure()  # type: plt.Figure
 ax = fig.add_subplot(111, projection='3d')  # type: plt.Axes
-ax.plot(*coords.T)
+ax.plot(*coords)
+xy_min = np.min(coords[[0, 1]])
+xy_max = np.max(coords[[0, 1]])
+xy_span = xy_max-xy_min
+z_min = np.min(coords[2])
+z_max = np.max(coords[2])
+z_mid = (z_max + z_min) / 2
+z_exaggeration = 10
+ax.set_xlim(xy_min, xy_max)
+ax.set_ylim(xy_min, xy_max)
+ax.set_zlim(z_mid-xy_span/z_exaggeration, z_mid+xy_span/z_exaggeration)
 plt.show()
 
 cv.destroyAllWindows()
