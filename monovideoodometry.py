@@ -8,7 +8,8 @@ class MonoVideoOdometry(object):
                  focal_length=718.8560,
                  pp=(607.1928, 185.2157), 
                  lk_params=dict(winSize=(21, 21), criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)), 
-                 detector=cv2.FastFeatureDetector_create(threshold=25, nonmaxSuppression=True)):
+                 detector=cv2.FastFeatureDetector_create(threshold=25, nonmaxSuppression=True),
+                 camera_extrinsics=np.identity(3)):
         """
         Arguments:
             img_file_path {str} -- File path that leads to image sequences
@@ -27,6 +28,7 @@ class MonoVideoOdometry(object):
         self.detector = detector
         self.lk_params = lk_params
         self.focal = focal_length
+        self.extrinsics = camera_extrinsics
         self.pp = pp
         self.R = np.identity(3)
         self.t = np.zeros(3)
@@ -99,24 +101,8 @@ class MonoVideoOdometry(object):
         # Save the total number of good features
         self.n_features = self.good_new.shape[0]
 
-    def get_mono_coordinates(self):
-        # We multiply by the diagonal matrix to fix our vector
-        # onto same coordinate axis as true values
-        diag = np.array([[-1, 0, 0],
-                        [0, -1, 0],
-                        [0, 0, -1]])
-        adj_coord = np.matmul(diag, self.t)
-
-        return adj_coord.flatten()
-
-    def get_true_coordinates(self):
-        """
-        Returns true coordinates of vehicle
-        
-        Returns:
-            np.array -- Array in format [x, y, z]
-        """
-        return self.true_coord.flatten()
+    def get_coordinates(self):
+        return np.dot(self.extrinsics, self.t)
 
     def process_frame(self):
         """

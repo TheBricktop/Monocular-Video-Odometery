@@ -13,6 +13,11 @@ focal = 718.8560
 pp = (607.1928, 185.2157)
 R_total = np.zeros((3, 3))
 t_total = np.empty(shape=(3, 1))
+camera_extrinsics = np.array([
+    [0, 0, -1],
+    [1, 0, 0],
+    [0, 1, 0]
+], dtype=float)
 
 # Parameters for lucas kanade optical flow
 lk_params = dict(winSize=(21, 21),
@@ -22,7 +27,7 @@ lk_params = dict(winSize=(21, 21),
 # Create some random colors
 color = np.random.randint(0, 255, (5000, 3))
 
-vo = MonoVideoOdometry(img_path, focal, pp, lk_params)
+vo = MonoVideoOdometry(img_path, focal, pp, lk_params, camera_extrinsics=camera_extrinsics)
 
 coords = []
 while vo.hasNextFrame():
