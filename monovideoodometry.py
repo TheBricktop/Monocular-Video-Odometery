@@ -9,7 +9,7 @@ class MonoVideoOdometry(object):
                  pp=(607.1928, 185.2157), 
                  lk_params=dict(winSize=(21, 21), criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)), 
                  detector=cv2.FastFeatureDetector_create(threshold=25, nonmaxSuppression=True),
-                 camera_extrinsics=np.identity(3)):
+                 camera_extrinsic_rotation=np.identity(3)):
         """
         Arguments:
             img_file_path {str} -- File path that leads to image sequences
@@ -28,7 +28,7 @@ class MonoVideoOdometry(object):
         self.detector = detector
         self.lk_params = lk_params
         self.focal = focal_length
-        self.extrinsics = camera_extrinsics
+        self.extrinsic_rotation = camera_extrinsic_rotation
         self.pp = pp
         self.R = np.identity(3)
         self.t = np.zeros(3)
@@ -102,7 +102,7 @@ class MonoVideoOdometry(object):
         self.n_features = self.good_new.shape[0]
 
     def get_coordinates(self):
-        return np.dot(self.extrinsics, self.t)
+        return np.dot(self.extrinsic_rotation, self.t)
 
     def process_frame(self):
         """

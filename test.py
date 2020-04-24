@@ -26,7 +26,7 @@ lk_params = dict(winSize=(21, 21),
 # Create some random colors
 color = np.random.randint(0, 255, (5000, 3))
 
-vo = MonoVideoOdometry(img_path, focal, pp, lk_params, camera_extrinsics=camera_extrinsics)
+vo = MonoVideoOdometry(img_path, focal, pp, lk_params, camera_extrinsic_rotation=camera_extrinsics)
 
 coords = []
 while vo.hasNextFrame():
