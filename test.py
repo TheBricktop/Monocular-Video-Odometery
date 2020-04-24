@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from monovideoodometry import MonoVideoOdometry
 import os
 
@@ -22,8 +23,8 @@ lk_params = dict(winSize=(21, 21),
 color = np.random.randint(0, 255, (5000, 3))
 
 vo = MonoVideoOdometry(img_path, focal, pp, lk_params)
-traj = np.zeros(shape=(600, 800, 3))
 
+coords = []
 while vo.hasNextFrame():
     frame = vo.current_frame
 
@@ -36,16 +37,12 @@ while vo.hasNextFrame():
 
     mono_coord = vo.get_mono_coordinates()
 
-    print("x: {}, y: {}, z: {}".format(*[str(pt) for pt in mono_coord]))
+    coords.append(mono_coord)
 
-    draw_x, draw_y, draw_z = [int(round(x)) for x in mono_coord]
-
-    traj = cv.circle(traj, (draw_x + 400, draw_z + 100), 1, list((0, 255, 0)), 4)
-
-    cv.putText(traj, 'Estimated Odometry Position:', (30, 120), cv.FONT_HERSHEY_SIMPLEX, 0.5,(255,255,255), 1)
-    cv.putText(traj, 'Green', (270, 120), cv.FONT_HERSHEY_SIMPLEX, 0.5,(0, 255, 0), 1)
-
-    cv.imshow('trajectory', traj)
-cv.imwrite("./images/trajectory.png", traj)
+coords = np.array(coords)
+fig = plt.figure()  # type: plt.Figure
+ax = fig.add_subplot(111, projection='3d')  # type: plt.Axes
+ax.plot(*coords.T)
+plt.show()
 
 cv.destroyAllWindows()
