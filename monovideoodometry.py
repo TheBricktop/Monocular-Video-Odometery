@@ -5,7 +5,7 @@ import glob
 
 
 class MonoVideoOdometry(object):
-    def __init__(self, img_file_path,
+    def __init__(self, file_path,
                  focal_length=718.8560,
                  pp=(607.1928, 185.2157),
                  lk_params=dict(winSize=(21, 21), criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)),
@@ -13,7 +13,7 @@ class MonoVideoOdometry(object):
                  camera_extrinsic_rotation=np.identity(3)):
         """
         Arguments:
-            img_file_path {str} -- File path that leads to image sequences
+            file_path {str} -- File path that leads to image sequences or video file
         
         Keyword Arguments:
             focal_length {float} -- Focal length of camera used in image sequence (default: {718.8560})
@@ -25,7 +25,7 @@ class MonoVideoOdometry(object):
             ValueError -- Raised when file either file paths are not correct, or img_file_path is not configured correctly
         """
 
-        self.file_path = img_file_path
+        self.file_path = file_path
         self.detector = detector
         self.lk_params = lk_params
         self.focal = focal_length
@@ -42,9 +42,14 @@ class MonoVideoOdometry(object):
         self.p0 = None
         self.p1 = None
 
-        self.frame_paths = glob.glob(os.path.join(img_file_path, "*.png"))
+        self.frame_paths = glob.glob(os.path.join(file_path, "*.png"))
         self.frame_paths.sort()
         self.n_frames = len(self.frame_paths)
+
+        self.vid_cap = None
+        if self.n_frames == 0:  # may be a video file
+            self.vid_cap = cv2.VideoCapture(file_path)
+            self.n_frames = self.vid_cap.get(cv2.CAP_PROP_FRAME_COUNT)
 
         self.process_frame()
 
@@ -113,12 +118,35 @@ class MonoVideoOdometry(object):
         Processes images in sequence frame by frame
         """
         if self.id < 2:
-            self.old_frame = cv2.imread(self.frame_paths[0], 0)
-            self.current_frame = cv2.imread(self.frame_paths[1], 0)
+            if self.vid_cap is not None:
+                success = False
+                while not success:
+                    success, old_frame = self.vid_cap.read()
+                self.old_frame = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
+                success = False
+                while not success:
+                    success, current_frame = self.vid_cap.read()
+                self.current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
+            else:
+                self.old_frame = cv2.imread(self.frame_paths[0], 0)
+                self.current_frame = cv2.imread(self.frame_paths[1], 0)
             self.visual_odometry()
-            self.id = 2
+            if self.vid_cap is not None:
+                self.id = self.vid_cap.get(cv2.CAP_PROP_POS_FRAMES)
+            else:
+                self.id = 2
         else:
             self.old_frame = self.current_frame
-            self.current_frame = cv2.imread(self.frame_paths[self.id], 0)
+            if self.vid_cap is not None:
+                success = False
+                while success is False and self.vid_cap.get(cv2.CAP_PROP_POS_FRAMES) < self.n_frames:
+                    success, current_frame = self.vid_cap.read()
+                if success:
+                    self.current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
+            else:
+                self.current_frame = cv2.imread(self.frame_paths[self.id], 0)
             self.visual_odometry()
-            self.id += 1
+            if self.vid_cap is not None:
+                self.id = self.vid_cap.get(cv2.CAP_PROP_POS_FRAMES)
+            else:
+                self.id += 1
