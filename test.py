@@ -29,6 +29,7 @@ color = np.random.randint(0, 255, (5000, 3))
 vo = MonoVideoOdometry(img_path, focal, pp, lk_params, camera_extrinsic_rotation=camera_extrinsics)
 
 coords = []
+cv.namedWindow("frame", cv.WINDOW_NORMAL)
 while vo.has_next_frame():
     frame = vo.current_frame
 
