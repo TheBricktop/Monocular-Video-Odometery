@@ -84,6 +84,7 @@ class MonoVideoOdometry(object):
         such that there are less than 2000 features remaining, a new feature
         detection is triggered. 
         """
+        self.p0 = self.p1
         if self.n_features < 2000:
             self.p0 = self.detect(self.old_frame)
 
