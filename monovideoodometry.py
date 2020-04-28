@@ -41,6 +41,7 @@ class MonoVideoOdometry(object):
         self.good_new = None
         self.p0 = None
         self.p1 = None
+        self.essential_matrix_point_mask = None
 
         self.frame_paths = glob.glob(os.path.join(file_path, "*.png"))
         self.frame_paths.sort()
@@ -99,14 +100,16 @@ class MonoVideoOdometry(object):
         # If the frame is one of first two, we need to initalize
         # our t and R vectors so behavior is different
         if self.id < 2:
-            E, _ = cv2.findEssentialMat(self.good_new, self.good_old, self.focal, self.pp, cv2.RANSAC, 0.999, 1.0, None)
+            E, mask = cv2.findEssentialMat(self.good_new, self.good_old, self.focal, self.pp, cv2.RANSAC, 0.999, 1.0, None)
             _, self.R, self.t, _ = cv2.recoverPose(E, self.good_old, self.good_new, self.R, self.t, self.focal, self.pp, None)
         else:
-            E, _ = cv2.findEssentialMat(self.good_new, self.good_old, self.focal, self.pp, cv2.RANSAC, 0.999, 1.0, None)
+            E, mask = cv2.findEssentialMat(self.good_new, self.good_old, self.focal, self.pp, cv2.RANSAC, 0.999, 1.0, None)
             _, R, t, _ = cv2.recoverPose(E, self.good_old, self.good_new, self.R.copy(), self.t.copy(), self.focal, self.pp, None)
 
             self.t = self.t + self.R.dot(t)
             self.R = R.dot(self.R)
+
+        self.essential_matrix_point_mask = mask
 
         # Save the total number of good features
         self.n_features = self.good_new.shape[0]

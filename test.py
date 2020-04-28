@@ -31,7 +31,8 @@ while vo.has_next_frame():
 
     disp_frame = cv.cvtColor(frame, cv.COLOR_GRAY2BGR)
     for i in range(len(vo.good_old)):
-        cv.line(disp_frame, tuple(vo.good_old[i]), tuple(vo.good_new[i]), (255, 255, 0))
+        color = (255, 255, 0) if vo.essential_matrix_point_mask[i] == 1 else (0, 0, 200)
+        cv.line(disp_frame, tuple(vo.good_old[i]), tuple(vo.good_new[i]), color)
 
     cv.imshow('frame', disp_frame)
     k = cv.waitKey(1)
