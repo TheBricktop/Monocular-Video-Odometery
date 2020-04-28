@@ -29,7 +29,11 @@ cv.namedWindow("frame", cv.WINDOW_NORMAL)
 while vo.has_next_frame():
     frame = vo.current_frame
 
-    cv.imshow('frame', frame)
+    disp_frame = cv.cvtColor(frame, cv.COLOR_GRAY2BGR)
+    for i in range(len(vo.good_old)):
+        cv.line(disp_frame, tuple(vo.good_old[i]), tuple(vo.good_new[i]), (255, 255, 0))
+
+    cv.imshow('frame', disp_frame)
     k = cv.waitKey(1)
     if k == ord("q"):
         break
