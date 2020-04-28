@@ -22,10 +22,6 @@ camera_extrinsics = np.array([
 lk_params = dict(winSize=(21, 21),
                  criteria=(cv.TERM_CRITERIA_EPS | cv.TERM_CRITERIA_COUNT, 30, 0.01))
 
-
-# Create some random colors
-color = np.random.randint(0, 255, (5000, 3))
-
 vo = MonoVideoOdometry(img_path, focal, pp, lk_params, camera_extrinsic_rotation=camera_extrinsics)
 
 coords = []
